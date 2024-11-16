@@ -12,9 +12,8 @@ CREATE TABLE users (
   username varchar(20) UNIQUE NOT NULL,
   password varchar(20) NOT NULL,
   admin varchar(1) DEFAULT NULL,	-- Y if admin account, Null if not
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (id)
 )
-
 
 CREATE TABLE trips (
   id int NOT NULL AUTO_INCREMENT,
@@ -48,3 +47,30 @@ CREATE TABLE trip_bookings (
 );
 
 INSERT INTO users(username, password, admin) VALUES ('admin', 'admin', 'Y');	-- Add admin account
+
+-- Add cities
+INSERT INTO carpooldb.cities (id, city) VALUES (1 ,"Ajax" );
+INSERT INTO carpooldb.cities (id, city) VALUES (2 ,"Aurora" );
+INSERT INTO carpooldb.cities (id, city) VALUES (3 ,"Brampton" );
+INSERT INTO carpooldb.cities (id, city) VALUES (4 ,"Brock" );
+INSERT INTO carpooldb.cities (id, city) VALUES (5 ,"Burlington" );
+INSERT INTO carpooldb.cities (id, city) VALUES (6 ,"Caledon" );
+INSERT INTO carpooldb.cities (id, city) VALUES (7 ,"Clarington" );
+INSERT INTO carpooldb.cities (id, city) VALUES (8 ,"East Gwillimbury" );
+INSERT INTO carpooldb.cities (id, city) VALUES (9 ,"Georgina" );
+INSERT INTO carpooldb.cities (id, city) VALUES (10,"Halton Hills" );
+INSERT INTO carpooldb.cities (id, city) VALUES (11,"King" );
+INSERT INTO carpooldb.cities (id, city) VALUES (12,"Markham" );
+INSERT INTO carpooldb.cities (id, city) VALUES (13,"Milton" );
+INSERT INTO carpooldb.cities (id, city) VALUES (14,"Mississauga" );
+INSERT INTO carpooldb.cities (id, city) VALUES (15,"Newmarket" );
+INSERT INTO carpooldb.cities (id, city) VALUES (16,"Oakville" );
+INSERT INTO carpooldb.cities (id, city) VALUES (17,"Oshawa" );
+INSERT INTO carpooldb.cities (id, city) VALUES (18,"Pickering" );
+INSERT INTO carpooldb.cities (id, city) VALUES (19,"Richmond Hill" );
+INSERT INTO carpooldb.cities (id, city) VALUES (20,"Scugog" );
+INSERT INTO carpooldb.cities (id, city) VALUES (21,"Toronto" );
+INSERT INTO carpooldb.cities (id, city) VALUES (22,"Uxbridge" );
+INSERT INTO carpooldb.cities (id, city) VALUES (23,"Vaughan" );
+INSERT INTO carpooldb.cities (id, city) VALUES (24,"Whitby" );
+INSERT INTO carpooldb.cities (id, city) VALUES (25,"Stouffville" );
