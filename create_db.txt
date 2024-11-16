@@ -1,0 +1,50 @@
+CREATE DATABASE carpooldb;
+USE carpooldb;
+
+CREATE TABLE cities (
+  id int NOT NULL,
+  city VARCHAR(20) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE users (
+  id int NOT NULL UNIQUE AUTO_INCREMENT,
+  username varchar(20) UNIQUE NOT NULL,
+  password varchar(20) NOT NULL,
+  admin varchar(1) DEFAULT NULL,	-- Y if admin account, Null if not
+  PRIMARY KEY (`id`)
+)
+
+
+CREATE TABLE trips (
+  id int NOT NULL AUTO_INCREMENT,
+  driver_id int DEFAULT NULL,		-- Null if trip is put up by driver
+  req_id int DEFAULT NULL,		-- Null if trip is put up by driver
+  departure_location int DEFAULT NULL,
+  arrival_location int DEFAULT NULL,
+  departure_date date DEFAULT NULL,
+  departure_time time DEFAULT NULL,
+  seats_available int DEFAULT NULL,
+  status enum('available','full','pending') DEFAULT 'available',
+  created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY departure_location (departure_location),
+  KEY arrival_location (arrival_location),
+  CONSTRAINT trips_ibfk_1 FOREIGN KEY (departure_location) REFERENCES cities (id),
+  CONSTRAINT trips_ibfk_2 FOREIGN KEY (arrival_location) REFERENCES cities (id)
+);
+
+CREATE TABLE trip_bookings (
+  id int NOT NULL AUTO_INCREMENT,
+  trip_id int DEFAULT NULL,
+  passenger_id int DEFAULT NULL,
+  seats_taken int DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY trip_id (trip_id),
+  KEY passenger_id (passenger_id),
+  CONSTRAINT trip_bookings_ibfk_1 FOREIGN KEY (trip_id) REFERENCES trips (id),
+  CONSTRAINT trip_bookings_ibfk_2 FOREIGN KEY (passenger_id) REFERENCES users (id)
+);
+
+INSERT INTO users(username, password, admin) VALUES ('admin', 'admin', 'Y');	-- Add admin account

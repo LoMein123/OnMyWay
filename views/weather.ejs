@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Display City Weather</title>
+    <%- include('./partials/head'); %>
+</head>
+
+<body>
+	<div class="container">
+
+	<header>
+		<%- include('./partials/header'); %>
+	</header>
+
+	<main>
+
+		<!-- <div class="card my-5" style= "border-radius: 1em; background-color: gainsboro;"> -->
+		<div class="card my-4" style="border: solid blue 1px;">
+
+        <!-- div class="card-body py-4 px-4 px-md-5"> -->
+		<div class="card-body">
+
+
+			<ul class="nav nav-tabs mb-1">
+				<li class="nav-item">
+					<a class="nav-link" href="/passengerDashboard"><span class="px-2">Passenger&nbsp;&nbsp;&nbsp;</span></a>
+				</li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle active" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><span class="px-2">Driver</span></a>
+					<ul class="dropdown-menu">
+						<li><a class="dropdown-item nav-link" href="/driverDashboard">Available Trips for Driver</a></li>
+						<li><a class="dropdown-item nav-link" href="/driverConfirmed">Confirmed Bookings for Driver</a></li>
+						<li><a class="dropdown-item nav-link" href="/driverRequested">Requested Bookings for Driver</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item nav-link" href="/driverReq">Request Bookings for Driver</a></li>
+					</ul>
+				</li>
+
+				<!-- New tab added to the far right -->
+				<li class="nav-item ms-auto">
+					<a class="nav-link" href="/logout"><span class="px-2">Logout</span></a>
+				</li>
+			</ul>
+
+			<div class="text-end">User Name: <%= locals.username %></div>
+			
+			<!-- this is the inner card -->
+			<div class="card mx-4 mb-3" style="border: none;">
+
+			<!-- message or error message -->
+			<!-- flash message, <%= JSON.stringify(message)  %> -->
+			<% if ( message.message) { %>
+			<div class="alert alert-success">
+				<%= message.message %>
+			</div>
+			<% } %>
+			<% if ( message.error) { %>
+			<div class="alert alert-danger">
+				<%= message.error %>
+			</div>
+			<% } %>
+			<!-- end of flash message -->
+
+			<!-- If it is not redirect, this will work, system error message -->
+			<% if (typeof error !== 'undefined' && error !== null) { %>
+				<p class="alert alert-danger"><%= error %></p>
+			<% } %>
+			<!------------------------------------------->
+
+
+			<h4 class="mb-4">Weather Information <%= weatherData.location.name %>, <%= weatherData.location.country %></h4>
+
+			<card class="mx-auto row mb-3" style="width: 40em; background-color: gainsboro; border-radius: .5em;">
+				<!-- Div to display the weather info -->
+				<div id="weatherInfo">
+					<% if (weatherData) { %>
+						<p><strong>Temperature:</strong> <span id="temperature"><%= weatherData.current.temp_c %></span>°C</p>
+						<!-- other data -->
+					<% } else { %>
+						<p>Could not load initial weather data. Please try again.</p>
+					<% } %>
+    			</div>
+			</card>
+
+
+			<!----------------------------------------------------------------------------->
+
+		</div> <!-- card-body -->
+		</div> <!-- card -->
+	</main>
+
+	<footer>
+		<%- include('./partials/footer'); %>
+	</footer>
+
+	</div> <!-- container -->
+
+    <script>
+
+    // Ensure that city is passed correctly from the backend
+    const city = "<%= city %>"; // Get city from query parameter passed to EJS
+    console.log("City:", city); // Debugging: Check the city value in console
+
+    // Function to fetch weather data
+	async function fetchWeather(city) {
+		
+            try {
+                const response = await fetch(`/weather?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+
+                // Update HTML with fetched data
+                document.getElementById('temperature').innerText = data.current.temp_c;
+				// ....
+				// ....
+            } catch (error) {
+                console.error('Error fetching weather:', error);
+                document.getElementById('weatherInfo').innerHTML = `<p>Error fetching weather data. Please try again.</p>`;
+            }
+        }
+
+        // Auto-reload weather data every 5 seconds
+        setInterval(() => fetchWeather(city), 5000);
+
+        // Initial fetch when the page loads
+        fetchWeather(city);
+    </script>
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,16 @@
+.container .nav .nav-link:hover {
+    background-color: gainsboro;
+}
+
+.container .nav .active {
+    background-color: gainsboro !important; /*!important make colour not changed by hover */
+}
+
+.nav-link.dropdown-toggle.active::after {
+    border-top-color: var(--bs-link-color);
+  }
+
+.form-check-input[type=radio] {
+    border-color: gray;
+}
+
