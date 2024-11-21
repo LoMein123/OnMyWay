@@ -3,9 +3,9 @@ const db = require('../db');
 
 const availableTripsQuery = 
     "select tr.id, date_format(departure_date, '%Y-%m-%d') as d_date, time_format(departure_time, '%h:%i %p') as d_time, " +
-    "f.city as from_city, t.city as to_city, seats_available, " +
-    "username as driver from trips tr, cities f, cities t, users u WHERE status = 'available' and driver_id = u.id " +
-    "and f.id = departure_location and t.id = arrival_location order by d_date asc, d_time asc";
+    "f.city as from_city, t.city as to_city, seats_available, vehicle_type, fee, " +
+    "username as driver from trips tr, cities f, cities t, users u ,  vehicles v WHERE status = 'available' and driver_id = u.id " +
+    "and f.id = departure_location and t.id = arrival_location and tr.vehicle_type_id = v.id order by d_date asc, d_time asc";
 
 // clean up without wrapping with Promise
 const getAvailableTrips = async () => {
@@ -19,13 +19,12 @@ const getAvailableTrips = async () => {
 
 // clean up without wrapping with Promise
 const getConfirmedBookings = async (passengerId) => {
-
     const confirmedBookingsQuery =
         "select tr.id, date_format(departure_date, '%Y-%m-%d') as d_date, time_format(departure_time, '%h:%i %p') as d_time, " +
         "f.city as from_city, t.city as to_city, seats_available, SUM(seats_taken) as seats_taken_sum, " +
-        "username as driver from trips tr, cities f, cities t, users u, trip_bookings tb " +
+        "username as driver, vehicle_type, fee from trips tr, cities f, cities t, users u, trip_bookings tb, vehicles v " +
         "WHERE status <> 'pending' and driver_id = u.id and f.id = departure_location and t.id = arrival_location " +
-        "and tr.id = tb.trip_id and tb.passenger_id = " + passengerId + " group by tb.trip_id " + 
+        "and tr.id = tb.trip_id and tb.passenger_id = " + passengerId + " and tr.vehicle_type_id = v.id group by tb.trip_id " + 
         "order by d_date asc, d_time asc";
 
     /// ============= need to set user move user here 
@@ -43,7 +42,7 @@ const getRequestedBookings = async (requestorId) => {
 
     const requestedBookingsQuery =
         "select tr.id, date_format(departure_date, '%Y-%m-%d') as d_date, time_format(departure_time, '%h:%i %p') as d_time, " +
-        "f.city as from_city, t.city AS to_city, seats_available, " +
+        "f.city as from_city, t.city AS to_city, seats_available, fee, " +
         "username as req_name from trips tr, cities f, cities t, users u " +
         "WHERE status = 'pending' and req_id = u.id and f.id = departure_location and t.id = arrival_location " +
         "AND req_id = " + requestorId + 
@@ -58,17 +57,9 @@ const getRequestedBookings = async (requestorId) => {
     }
 };
 
-const getCities = async () => {
-    try {
-        const [results] = await db.execute("select * from cities");
-        return results;
-    } catch (error) {
-        throw error;
-    }
-};
 
 // use then and catch
-const processPassengerReq = (inputDate, inputTime, inputFrom, inputTo, inputSeats, requestPassangerId, callback) => {
+const processPassengerReq = (inputDate, inputTime, inputFrom, inputTo, inputSeats, requestPassangerId, fee, callback) => {
 
     console.log("tripModel.ProcessPassengerReq");
     console.log("inputDate = " + inputDate);
@@ -77,12 +68,13 @@ const processPassengerReq = (inputDate, inputTime, inputFrom, inputTo, inputSeat
     console.log("inputTo   = " + inputTo);
     console.log("inputSeats = " + inputSeats);
     console.log("requestPassangerId = " + requestPassangerId);
+    console.log("fee = " + fee);
 
     // driver not assigned, put in value 0, req_id = requestPassangerId
     var insertString = "INSERT INTO trips (driver_id, req_id, departure_location, arrival_location, " +
-        "departure_date, departure_time, seats_available, status) " +
+        "departure_date, departure_time, seats_available, fee, status) " +
         "VALUES(0, " + requestPassangerId + ", " + inputFrom + ", " + inputTo + ", '" +
-        inputDate + "', '" + inputTime + "', " + inputSeats +
+        inputDate + "', '" + inputTime + "', " + inputSeats + ", " + fee +
         " , 'pending');";
 
     console.log(insertString);
@@ -99,39 +91,6 @@ const processPassengerReq = (inputDate, inputTime, inputFrom, inputTo, inputSeat
             callback("Error during trip request - " + eror , null);
         });
 };
-
-
-// use async for insert, does not work, keep waiting
-/*
-const processPassengerReq = async (inputDate, inputTime, inputFrom, inputTo, inputSeats, requestPassangerId) => {
-
-    console.log("tripModel.ProcessPassengerReq");
-    console.log("inputDate = " + inputDate);
-    console.log("inputTime = " + inputTime);
-    console.log("inputFrom = " + inputFrom);
-    console.log("inputTo   = " + inputTo);
-    console.log("inputSeats = " + inputSeats);
-    console.log("requestPassangerId = " + requestPassangerId);
-
-    // driver not assigned, put in value 0, req_id = requestPassangerId
-    var insertString = "INSERT INTO trips (driver_id, req_id, departure_location, arrival_location, " +
-        "departure_date, departure_time, seats_available, status) " +
-        "VALUES(0, " + requestPassangerId + ", " + inputFrom + ", " + inputTo + ", '" +
-        inputDate + "', '" + inputTime + "', " + inputSeats +
-        " , 'pending');";
-
-    console.log(insertString);
-    
-    try {
-        const [results] = await db.execute(insertString, [])
-        const tripId = results.insertId;
-        console.log("tripId =" + tripId);
-        return tripId;
-    } catch (error) {
-        throw error;
-    }
-};
-*/
 
 
 const updateSeatsUsed = (tripId, passengerId, seatsTaken, seatsAvail, callback) => {
@@ -184,7 +143,7 @@ const updateSeatsUsed = (tripId, passengerId, seatsTaken, seatsAvail, callback) 
 const availableTripsForDriver =
     "select tr.id, date_format(departure_date, '%Y-%m-%d') as d_date, time_format(departure_time, '%h:%i %p') as d_time, " +
     "f.city as from_city, t.city as to_city, seats_available, " +
-    "req_id, username as req_name from trips tr, cities f, cities t, users u WHERE status = 'pending' and req_id = u.id " +
+    "req_id, username as req_name, fee from trips tr, cities f, cities t, users u WHERE status = 'pending' and req_id = u.id " +
     "and f.id = departure_location and t.id = arrival_location order by d_date asc, d_time asc";
 
 
@@ -199,10 +158,10 @@ const getTripsAvailableForDriver = async () => {
 };
 
 
-const updateDriverSelectTrip = (tripId, driverId, passengerId, callback) => {
+const updateDriverSelectTrip = (tripId, driverId, passengerId, vehicleType, callback) => {
 
     var updateString = "UPDATE trips SET driver_id = " + driverId +
-        ", seats_available = 0, status = 'full' WHERE id = " + tripId;
+        ", seats_available = 0, status = 'full' , vehicle_type_id = " + vehicleType + " WHERE id = " + tripId;
 
     console.log(updateString);
 
@@ -225,14 +184,16 @@ const getDriverConfirmedBookings = async (driverId) => {
         "select tr.id, date_format(departure_date, '%Y-%m-%d') as d_date, time_format(departure_time, '%h:%i %p') as d_time, " +
         "f.city as from_city, t.city as to_city, seats_available, SUM(seats_taken) as seats_taken_sum, " +
         "(select group_concat(DISTINCT u.username separator ', ') from users u, trip_bookings tb where tb.trip_id = tr.id and u.id = tb.passenger_id ) as passengers, " +
-        "username as driver " +
-        "from trips tr, cities f, cities t, users u, trip_bookings tb " +
+        "username as driver, fee, v.vehicle_type " +
+        "from trips tr, cities f, cities t, users u, trip_bookings tb, vehicles v " +
         "WHERE status <> 'pending' " +
         "AND tr.driver_id = u.id " + 
         "AND f.id = departure_location " +
         "AND t.id = arrival_location " +
         "AND tr.id = tb.trip_id " +
-        "AND tr.driver_id = " + driverId + " GROUP BY tb.trip_id ORDER BY d_date ASC, d_time ASC"	
+        "AND tr.driver_id = " + driverId + 
+        " AND tr.vehicle_type_id = v.id " +
+        "GROUP BY tb.trip_id ORDER BY d_date ASC, d_time ASC"	
 
     try {
         const [results] = await db.execute(driverConfirmedBookingsQuery);
@@ -248,9 +209,10 @@ const getDriverRequestedBookings = async (driverId) => {
     const driverRequestedBookingsQuery =
         "select tr.id, date_format(departure_date, '%Y-%m-%d') as d_date, time_format(departure_time, '%h:%i %p') as d_time, " +
         "f.city as from_city, t.city AS to_city, seats_available, " +
-        "username as driver_name from trips tr, cities f, cities t, users u " +
+        "username as driver_name, vehicle_type, fee " +
+        "from trips tr, cities f, cities t, users u, vehicles v " +
         "WHERE status = 'available' and driver_id = u.id and f.id = departure_location and t.id = arrival_location " +
-        "AND driver_id = " + driverId + " AND tr.id NOT IN(SELECT distinct trip_id FROM trip_bookings) " +
+        "AND driver_id = " + driverId + " AND tr.vehicle_type_id = v.id AND tr.id NOT IN(SELECT distinct trip_id FROM trip_bookings) " +
         " order by d_date asc, d_time asc";
  
     try {
@@ -263,7 +225,7 @@ const getDriverRequestedBookings = async (driverId) => {
 
 
 // use then and catch
-const processDriverReq = (inputDate, inputTime, inputFrom, inputTo, inputSeats, requestDriverId, callback) => {
+const processDriverReq = (inputDate, inputTime, inputFrom, inputTo, inputSeats, requestDriverId, vehicleType, fee, callback) => {
 
     console.log("tripModel.ProcessDriverReq");
     console.log("inputDate = " + inputDate);
@@ -272,12 +234,14 @@ const processDriverReq = (inputDate, inputTime, inputFrom, inputTo, inputSeats, 
     console.log("inputTo   = " + inputTo);
     console.log("inputSeats = " + inputSeats);
     console.log("requestDriverId = " + requestDriverId);
+    console.log("vehicleType = " + vehicleType);
+    console.log("fee = " + fee);
 
     // driver_id = requestDriverId, req_id = 0
     var insertString = "INSERT INTO trips (driver_id, req_id, departure_location, arrival_location, " +
-        "departure_date, departure_time, seats_available, status) " +
+        "departure_date, departure_time, seats_available, fee, vehicle_type_id, status) " +
         "VALUES(" + requestDriverId + ", 0 , " + inputFrom + ", " + inputTo + ", '" +
-        inputDate + "', '" + inputTime + "', " + inputSeats +
+        inputDate + "', '" + inputTime + "', " + inputSeats + ", " + fee + ", " + vehicleType +
         " , 'available');";
 
     console.log(insertString);
@@ -343,12 +307,43 @@ const deleteTrip = (tripId, callback) => {
         });
 };
 
+
+// get cities
+const getCities = async () => {
+    try {
+        const [results] = await db.execute("select * from cities");
+        return results;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// get vehicle types
+const getVehicleTypes = async () => {
+    try {
+        const [results] = await db.execute("select * from vehicles");
+        return results;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// get fees
+const getFees = async () => {
+    try {
+        const [results] = await db.execute("select * from fees");
+        return results;
+    } catch (error) {
+        throw error;
+    }
+};
+
+
 module.exports = {
     getAvailableTrips,
     updateSeatsUsed,
     getConfirmedBookings,
     getRequestedBookings,
-    getCities,
     processPassengerReq,
 
     getTripsAvailableForDriver,
@@ -358,5 +353,10 @@ module.exports = {
     processDriverReq,
 
     getDeleteTrips,
-    deleteTrip
+    deleteTrip,
+
+    getCities,
+    getVehicleTypes,
+    getFees
+
 };

@@ -120,11 +120,14 @@
 								<div class="col-md-3">
 									Driver
 								</div>
-								<div class="col-md-5">
+								<div class="col-md-4">
 									<div class="text-center">Seats Confirmed</div>
 								</div>
-								<div class="col-md-4">
-									<!-- <div class="text-center">Book Seats</div> -->
+								<div class="col-md-3">
+									<div class="text-center">Vehicle Type</div>
+								</div>
+								<div class="col-md-2">
+									<div class="text-center">Fee</div>
 								</div>
 
 							</div> <!-- row -->
@@ -176,12 +179,16 @@
 								<div class="col-md-3">
 									<%= trip.driver %>
 								</div>
-								<div class="col-md-5">
+								<div class="col-md-4">
 									<div class="text-center"><%= trip.seats_taken_sum %></div>
 								</div>
 
-								<div class="col-md-4">
-									<!-- no dropdown -->
+								<div class="col-md-3">
+									<div class="text-center"><%= trip.vehicle_type %></div>
+								</div>
+
+								<div class="col-md-2">
+									<div class="text-center">$ <%= trip.fee %></div>
 								</div>
 
 							</div> <!-- row -->

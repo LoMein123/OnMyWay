@@ -6,6 +6,15 @@
 </head>
 
 <body>
+
+	<script id="feeData" type="application/json">
+		<%- JSON.stringify(feeArray) %>
+	</script>
+
+	<script>
+		const feeArray = JSON.parse(document.getElementById('feeData').textContent);
+	</script>
+	
 	<div class="container">
 
 	<header>
@@ -85,7 +94,7 @@
 				<card class="mx-auto row mb-3" style="width: 40em; background-color: gainsboro; border-radius: .5em;">
 					<div class="col-md-6 px-5 py-3">
 						<label for="inputFrom" class="form-label">From</label>
-						<select class="form-select" tabindex="30" style="width: 11em" id="inputFrom" name="inputFrom" required="yes" >
+						<select class="form-select" tabindex="30" style="width: 11em" id="inputFrom" name="inputFrom" required="yes" onchange="updateFee()">
 							<option> </option>
 							<!-- city dropdown list -->
 							<% cities.forEach( (city) => { %>
@@ -95,7 +104,7 @@
 					</div>
 					<div class="col-md-6 px-5 py-3">
 						<label for="inputTo" class="form-label">To</label>
-						<select class="form-select" tabindex="40" style="width: 11em" id="inputTo" name="inputTo" required="yes" >
+						<select class="form-select" tabindex="40" style="width: 11em" id="inputTo" name="inputTo" required="yes" onchange="updateFee()">
 							<option> </option>
 							<!-- city dropdown list -->
 							<% cities.forEach( (city) => { %>
@@ -106,7 +115,7 @@
 				</card>
 
 				<card class="mx-auto row mb-3" style="width: 40em; background-color: gainsboro; border-radius: .5em;">
-					<div class="col-md-6 px-5 py-3">
+					<div class="col-md-3 px-5 py-3">
 						<label for="inputSeats" class="form-label">Seats</label>
 						<select class="form-select" style="width: 5em" tabindex="50"  id="inputSeats" name="inputSeats" required="yes" >
 										<option> </option>
@@ -116,14 +125,30 @@
 										<option value='4'>&nbsp;&nbsp;4</option>
 						</select>
 					</div>
-					<div class="col-md-6 px-5 py-3">
+					<div class="col-md-5 px-5 py-3">
+						<label for="vehicleType" class="form-label">Select Vehicle Type</label>
+						<select class="form-select" style="width: 10em" tabindex="60"  id="vehicleType" name="vehicleType" required="yes" >
+							<option value=""> </option>
+							<% vehicleTypes.forEach(vehicle => { %>
+								<option value="<%= vehicle.id %>"><%= vehicle.vehicle_type %></option>
+							<% }) %>
+						</select>
+					</div>
 
+					<div class="col-md-4 px-5 py-3">
+						<label for="vehicleType" class="form-label">Fee</label>
+
+						<!-- Visible input for display -->
+						<input tabindex="70" type="text" class="form-control" style="width: 8em" id="feeDisplay" name="feeDisplay" readonly>
+
+						<!-- Hidden input to store raw fee value -->
+						<input type="hidden" id="fee" name="fee">
 					</div>
 
 				</card>
 
 				<div class="mx-auto text-end" style="width: 40em;">
-					<button "tabindex="60" class="btn btn-primary mx-3" type="submit" id="selectTripButton" >Request</button>
+					<button tabindex="100" class="btn btn-primary mx-3" type="submit" id="selectTripButton" >Request</button>
 				</div>
 
 			</form>
@@ -141,6 +166,44 @@
 	</footer>
 
 	</div> <!-- container -->
+
+
+<script>
+
+    function updateFee() {
+
+        const fromCity = document.getElementById("inputFrom").value;
+        const toCity = document.getElementById("inputTo").value;
+
+        // Reset fee text field
+        document.getElementById("fee").value = "";
+        document.getElementById("feeDisplay").value = "";
+
+        // Check if both cities are selected
+        if (!fromCity || !toCity) return;
+
+        // Check if the cities are the same
+        if (fromCity === toCity) {
+            alert("The cities cannot be the same.");
+			document.getElementById("inputTo").value ="";
+            return;
+        }
+
+        // Find and display the fee
+        const fee = feeArray[fromCity][toCity];
+
+		if (fee)
+		{
+    		document.getElementById("feeDisplay").value = `$${fee}`; // Show fee with $
+    		document.getElementById("fee").value = fee; // Send raw fee
+		} else
+		{
+    		document.getElementById("feeDisplay").value = "Fee not available";
+    		document.getElementById("fee").value = ""; // Clear raw fee
+		}
+
+    }
+</script>
 
 </body>
 

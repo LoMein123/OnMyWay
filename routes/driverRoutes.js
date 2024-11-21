@@ -13,7 +13,7 @@ const driverController = require('../controllers/driverController');
 router.get('/dashboard', requireAuth, driverController.tripsAvailableForDriver);
 
 // Driver accepts a trip request
-router.get('/selectTrip/:tripId/:reqId/:seatsAvail', requireAuth, driverController.driverSelectTrip);
+router.get('/selectTrip/:tripId/:reqId/:seatsAvail/:vehicleType', requireAuth, driverController.driverSelectTrip);
 
 // Confirmed bookings for driver
 router.get('/confirmed', requireAuth, driverController.displayDriverConfirmedBookings);

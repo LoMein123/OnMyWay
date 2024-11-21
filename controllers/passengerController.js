@@ -96,12 +96,29 @@ const displayRequestedBookings = async (req, res) => {
  * @description Displays the passenger request page (for making trip requests)
  */
 const passengerReq = async (req, res) => {
+
     try {
         const cities = await tripModel.getCities();
-        res.render('passengerReq', { cities, error: null });
+        const vehicleTypes = await tripModel.getVehicleTypes(); // Assume this method gets vehicle types
+        const fees = await tripModel.getFees(); // Fetch fees
+
+        // Create a 2D fee array indexed from 1 to maxCities
+        const maxCities = cities.length; // Assuming city IDs are 1-based and sequential
+        const feeArray = Array.from({ length: maxCities + 1 }, () => Array(maxCities + 1).fill(0));
+
+        // Populate the fee array
+        fees.forEach(fee => {
+            feeArray[fee.from_city][fee.to_city] = fee.fee;
+        });
+
+        //console.log(feeArray); // Check what’s being sent to the template
+        
+        res.render('passengerReq', { cities, feeArray, vehicleTypes, error: null });
     } catch (error) {
-        res.render('passengerReq', { cities: [], error: error.message });
+        console.log("driverReq error = " + error);
+        res.render('passengerReq', { cities: [], feeArray: [], vehicleTypes: [], error: error.message });
     }
+
 };
 
 
@@ -110,7 +127,7 @@ const passengerReq = async (req, res) => {
  * @description Processes the passenger request for a new trip
  */
 const processPassengerReq = (req, res) => {
-    const { inputDate, inputTime, inputFrom, inputTo, inputSeats } = req.body;
+    const { inputDate, inputTime, inputFrom, inputTo, inputSeats, fee } = req.body;
 
     console.log("passengerController.processPassengerReq");
     console.log("inputDate = " + inputDate);
@@ -118,6 +135,7 @@ const processPassengerReq = (req, res) => {
     console.log("inputFrom = " + inputFrom);
     console.log("inputTo   = " + inputTo);
     console.log("inputSeats = " + inputSeats);
+    console.log("fee = " + fee);
 
     const requestPassangerId = req.session.userId;
 
@@ -125,7 +143,7 @@ const processPassengerReq = (req, res) => {
 
     // Call the model to add the trip request, display flash message based on success or failure
     tripModel.processPassengerReq(inputDate, inputTime, inputFrom, inputTo, inputSeats,
-                                    requestPassangerId, (error, message) => {
+                                    requestPassangerId, fee, (error, message) => {
         if (error) {
             console.log("tripModel.processPassengerReq(), error = " + error);
             req.flash('error', error );
