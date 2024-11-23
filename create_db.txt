@@ -2,24 +2,26 @@ CREATE DATABASE carpooldb;
 USE carpooldb;
 
 CREATE TABLE cities (
-  id int NOT NULL,
+  id INT NOT NULL,
   city VARCHAR(20) NOT NULL,
+  province VARCHAR(255) NOT NULL,
+  country VARCHAR(255) NOT NULL,
   PRIMARY KEY (id)
 );
 
 CREATE TABLE users (
-  id int NOT NULL UNIQUE AUTO_INCREMENT,
-  username varchar(20) UNIQUE NOT NULL,
-  password varchar(20) NOT NULL,
-  admin varchar(1) DEFAULT NULL,	-- Y if admin account, Null if not
+  id INT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(20) UNIQUE NOT NULL,
+  password VARCHAR(20) NOT NULL,
+  admin VARCHAR(1) DEFAULT NULL, -- 'Y' if admin account, NULL if not
   PRIMARY KEY (id)
 );
 
 CREATE TABLE fees (
-  id int NOT NULL AUTO_INCREMENT,
-  from_city int NOT NULL,
-  to_city int NOT NULL,
-  fee int NOT NULL,
+  id INT NOT NULL AUTO_INCREMENT,
+  from_city INT NOT NULL,
+  to_city INT NOT NULL,
+  fee INT NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY id_UNIQUE (id),
   KEY id_idx (from_city),
@@ -29,26 +31,26 @@ CREATE TABLE fees (
 );
 
 CREATE TABLE vehicles (
-  id int NOT NULL AUTO_INCREMENT,
-  vehicle_type varchar(45) DEFAULT NULL,
+  id INT NOT NULL AUTO_INCREMENT,
+  vehicle_type VARCHAR(45) DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY idnew_table_UNIQUE (id)
 );
 
 CREATE TABLE trips (
-  id int NOT NULL AUTO_INCREMENT,
-  driver_id int DEFAULT NULL,
-  req_id int DEFAULT NULL,
-  departure_location int DEFAULT NULL,
-  arrival_location int DEFAULT NULL,
-  departure_date date DEFAULT NULL,
-  departure_time time DEFAULT NULL,
-  seats_available int DEFAULT NULL,
-  status enum('available','full','pending') DEFAULT 'available',
-  created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  vehicle_type_id int DEFAULT '1',
-  fee int DEFAULT NULL,
+  id INT NOT NULL AUTO_INCREMENT,
+  driver_id INT DEFAULT NULL,
+  req_id INT DEFAULT NULL,
+  departure_location INT DEFAULT NULL,
+  arrival_location INT DEFAULT NULL,
+  departure_date DATE DEFAULT NULL,
+  departure_time TIME DEFAULT NULL,
+  seats_available INT DEFAULT NULL,
+  status ENUM('available','full','pending') DEFAULT 'available',
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  vehicle_type_id INT DEFAULT '1',
+  fee INT DEFAULT NULL,
   PRIMARY KEY (id),
   KEY departure_location (departure_location),
   KEY arrival_location (arrival_location),
@@ -59,16 +61,35 @@ CREATE TABLE trips (
 );
 
 CREATE TABLE trip_bookings (
-  id int NOT NULL AUTO_INCREMENT,
-  trip_id int DEFAULT NULL,
-  passenger_id int DEFAULT NULL,
-  seats_taken int DEFAULT NULL,
+  id INT NOT NULL AUTO_INCREMENT,
+  trip_id INT DEFAULT NULL,
+  passenger_id INT DEFAULT NULL,
+  seats_taken INT DEFAULT NULL,
   PRIMARY KEY (id),
   KEY trip_id (trip_id),
   KEY passenger_id (passenger_id),
   CONSTRAINT trip_bookings_ibfk_1 FOREIGN KEY (trip_id) REFERENCES trips (id),
   CONSTRAINT trip_bookings_ibfk_2 FOREIGN KEY (passenger_id) REFERENCES users (id)
 );
+
+CREATE TABLE weather (
+    id INT NOT NULL AUTO_INCREMENT,
+    city_id INT NOT NULL, -- Foreign key referencing the cities table
+    forecast_datetime DATETIME NOT NULL,
+    temperature FLOAT NOT NULL,
+    temperature_unit ENUM('C', 'F') DEFAULT 'C' NOT NULL, 
+    weathercondition VARCHAR(255) NOT NULL,
+    icon_url TEXT,
+    humidity INT, 
+    wind_speed FLOAT,
+    precipitation FLOAT,
+    forecast_type ENUM('current', 'forecast') DEFAULT 'forecast' NOT NULL,
+    last_updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    PRIMARY KEY (id),
+    UNIQUE KEY unique_forecast (city_id, forecast_datetime),
+    FOREIGN KEY (city_id) REFERENCES cities (id) ON DELETE CASCADE
+);
+
 
 -- Add vehicle types
 INSERT INTO vehicles (id,vehicle_type) VALUES
@@ -110,6 +131,13 @@ INSERT INTO carpooldb.cities (id, city) VALUES (22,"Uxbridge" );
 INSERT INTO carpooldb.cities (id, city) VALUES (23,"Vaughan" );
 INSERT INTO carpooldb.cities (id, city) VALUES (24,"Whitby" );
 INSERT INTO carpooldb.cities (id, city) VALUES (25,"Stouffville" );
+UPDATE carpooldb.cities
+SET province = 'Ontario', country = 'Canada'
+WHERE id IN (
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25
+);
 
 -- Add Fees
 INSERT INTO fees (from_city, to_city, fee) VALUES (1, 1, 0);

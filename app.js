@@ -10,7 +10,7 @@ const userRoutes = require('./routes/userRoutes');              // User routes
 const adminRoutes = require('./routes/adminRoutes');            // Admin routes
 const passengerRoutes = require('./routes/passengerRoutes');    // Passenger routes
 const driverRoutes = require('./routes/driverRoutes');          // Driver routes
-//const weatherRoutes = require('./routes/weatherRoutes');        // Weather routes doesnt exist yet
+const weatherRoutes = require('./routes/weatherRoutes');        // Weather routes
 const cookieParser = require('cookie-parser');                  // Cookie parser
 const flash = require('express-flash');                         // Flash messages
 const bodyParser = require('body-parser');                      // Request body parser
@@ -38,7 +38,7 @@ app.use('/', authRoutes);
 app.use('/adminPage', adminRoutes);
 app.use('/driver', driverRoutes);   
 app.use('/passenger', passengerRoutes);
-//app.use('/weather', weatherRoutes);
+app.use('/weather', weatherRoutes);
 app.use('/user', userRoutes);
 
 // Default page is login page
