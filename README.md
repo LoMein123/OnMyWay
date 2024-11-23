@@ -23,11 +23,11 @@ This project is a Node.js application following the Model-View-Controller (MVC) 
 4. Change the user/password field in `db.js` to match your MySQL credentials.
     ```js
     const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',           // Adjust this value as needed
-    password: 'password',   // Adjust this value as needed
-    database: 'carpooldb',  
-    connectionLimit: 10
+        host: 'localhost',
+        user: 'YOUR_USER_HERE',           // Adjust this value as needed
+        password: 'YOUR_PASSWORD_HERE',   // Adjust this value as needed
+        database: 'carpooldb',  
+        connectionLimit: 10
     });
     ```
 
@@ -41,6 +41,14 @@ This project is a Node.js application following the Model-View-Controller (MVC) 
 7. Install the dependencies:
     ```sh
     npm install
+    ```
+
+8. Add your weather API key to `weatherconfig.js`:
+    ```js
+    module.exports = {
+        WEATHER_API_KEY: 'YOUR_API_KEY_HERE', // Your Weather API key
+        WEATHER_API_BASE_URL: 'http://api.weatherapi.com/v1/forecast.json',
+    };
     ```
 
 ## Usage
@@ -64,6 +72,7 @@ nodejs-mvc-year3/
 ├── app.js
 ├── db.js
 ├── package.json
+├── weatherconfig.js
 └── README.md
 ```
 
@@ -76,3 +85,5 @@ nodejs-mvc-year3/
 - **app.js**: The main application file.
 - **package.json**: The project configuration file.
 - **db.js**: Database Connection Information.
+- **weatherconfig.js**: Configuration file for the weather API.
+- **README.md**: Project documentation.
