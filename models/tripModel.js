@@ -339,6 +339,23 @@ const getFees = async () => {
 };
 
 
+// Get number of trips to each city
+const getCitiesCount = async (callback) => {
+    const mostCommonCitiesQuery = 
+        "SELECT city, COUNT(trips.id) AS count " +
+        "FROM cities " +
+        "LEFT JOIN trips ON cities.id = trips.arrival_location " +
+        "GROUP BY city " +
+        "ORDER BY count DESC;";
+
+    try {
+        results = db.execute(mostCommonCitiesQuery, [])
+        return results;
+    } catch (error) {
+        throw error;
+    }
+};
+
 module.exports = {
     getAvailableTrips,
     updateSeatsUsed,
@@ -357,6 +374,7 @@ module.exports = {
 
     getCities,
     getVehicleTypes,
-    getFees
+    getFees,
 
+    getCitiesCount
 };

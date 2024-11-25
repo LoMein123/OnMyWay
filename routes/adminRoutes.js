@@ -11,13 +11,14 @@ const adminController = require('../controllers/adminController');
 
 // Admin dashboard
 router.get('/', requireAuth, adminController.adminPage);
-
-// Export database
 router.post('/', requireAuth, adminController.processAdminPage);
 
 // Delete trip page
 router.get('/deleteTrip', requireAuth, adminController.deleteTrip);
 router.post('/deleteTrip', requireAuth, adminController.processDeleteTrip);
 router.get('/processDeleteTripDisplay/:tripId', requireAuth, adminController.processDeleteTripDisplay);
+
+// Chart of most common cities
+router.get('/statistics', requireAuth, adminController.processStats);
 
 module.exports = router;

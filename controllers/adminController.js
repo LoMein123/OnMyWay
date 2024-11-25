@@ -9,7 +9,6 @@ const { parse } = require('json2csv');
  * @description Display the admin page, if not admin, redirect to login
  */
 const adminPage = (req, res) => {
-    //console.log("req.session.admin=" + req.session.admin);
     if ( req.session.admin == 'Y' || req.session.admin == 'y')
         res.render('adminPage');
     else
@@ -21,7 +20,7 @@ const adminPage = (req, res) => {
 
 /**
  * @function processAdminPage
- * @description Export database
+ * @description Process the admin page actions (export database or delete trip or statistics)
  */
 const processAdminPage = async (req, res) => {
     const { adminAction } = req.body;
@@ -48,8 +47,10 @@ const processAdminPage = async (req, res) => {
 
     } else if (adminAction === 'deleteTrip') {
         // Code to delete a trip
-        //res.render('adminPage', {message: 'Go to Delete Trip Page'});
         res.redirect('/adminPage/deleteTrip');
+    } else if (adminAction === 'statistics') {
+        // Code to display statistics
+        res.redirect('/adminPage/statistics');
     } else {
         console.log("No action selected.");
     }
@@ -106,6 +107,24 @@ const processDeleteTripDisplay = (req, res) => {
     });
 };
 
+
+/**
+ * @description process create of a chart of most common cities
+ */
+const processStats = async (req, res) => {
+    const { adminAction } = req.body;
+    console.log(adminAction); // Will log either "exportdb" or "deleteTrip" based on the selection
+
+    // Call the model to get the data
+    try {
+        const cityCount = await tripModel.getCitiesCount();
+        res.render('statistics', { cityCount, error: null });
+    } catch (error) {
+        res.render('statistics', { cityCount: [], error: error.message });
+    }
+};
+
+
 module.exports = {
     adminPage,
 
@@ -113,5 +132,7 @@ module.exports = {
 
     deleteTrip,
     processDeleteTrip,
-    processDeleteTripDisplay
+    processDeleteTripDisplay,
+
+    processStats
 };
