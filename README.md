@@ -62,7 +62,7 @@ This project is a Node.js application following the Model-View-Controller (MVC) 
 ## Project Structure
 
 ```
-nodejs-mvc-year3/
+OnMyWay/
 ├── controllers/
 ├── middleware/
 ├── models/
