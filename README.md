@@ -63,6 +63,7 @@ This project is a Node.js application following the Model-View-Controller (MVC) 
 
 ```
 OnMyWay/
+├── config/
 ├── controllers/
 ├── middleware/
 ├── models/
@@ -72,10 +73,10 @@ OnMyWay/
 ├── app.js
 ├── db.js
 ├── package.json
-├── weatherconfig.js
 └── README.md
 ```
 
+- **config/**: Contains configuration for Weather API.
 - **controllers/**: Contains the application logic.
 - **middleware/**: Contains middleware for the application.
 - **models/**: Contains the database models.
@@ -85,5 +86,4 @@ OnMyWay/
 - **app.js**: The main application file.
 - **package.json**: The project configuration file.
 - **db.js**: Database Connection Information.
-- **weatherconfig.js**: Configuration file for the weather API.
 - **README.md**: Project documentation.
